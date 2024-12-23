@@ -1,5 +1,5 @@
 export interface Case {
-  number: string;
+  number: number;
   name: string;
   amount: string;
   status: string;

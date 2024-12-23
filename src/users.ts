@@ -4,9 +4,6 @@ export interface Location {
   country: string;
 }
 
-//export interface PlanUsage {
-//  data_usage: string;
-//}
 
 export interface User {
   id: string;
@@ -14,9 +11,9 @@ export interface User {
   lastName: string;
   userType: string;
   email: string;
-  companyName: string,
-  products: string,
-  memberSince: string,
+  companyName: string;
+  products: string[];
+  memberSince: string;
 }
 
 
@@ -28,8 +25,8 @@ export const users = [
     userType: 'Admin',
     email: 'justin@biglawfirm.com',
     companyName: "Big Law Firm",
-    products: ["Clio Manage", "Clio Grow"]
-    memberSince: '2022-01-31'
+    products: ["Clio Manage", "Clio Grow"],
+    memberSince: '2022-01-31',
   },
   {
     id: '52',
@@ -38,7 +35,7 @@ export const users = [
     userType: 'Employee',
     email: 'rustom@biglawfirm.com',
     companyName: "Big Law Firm",
-    products: ["Clio Grow", "Clio Draft"]
-    memberSince: '2024-07-15'
+    products: ["Clio Grow", "Clio Draft"],
+    memberSince: '2024-07-15',
   },
 ] as User[];
