@@ -2,11 +2,11 @@ import { resetProfiles, setProfile, getProfile } from './data';
 import { MavenAGIClient } from 'mavenagi';
 import { cases } from "@/cases";
 import { users } from "@/users";
-import { store as redisStore } from "@/redis";
+import { store } from "@/redis";
 
-// Stripe-provided test key for demo purposes.
-const STRIPE_TEST_KEY = 'sk_test_4eC39HqLyjWDarjtT1zdp7dc';
-const STRIPE_TEST_CUSTOMER_ID = 'cus_R4dnq4Cifq7N2D';
+// Constants for Redis keys
+const LICENSE_KEY = 'licenses';
+const SUBSCRIPTION_KEY = 'subscription';
 
 export default {
   async preInstall({
@@ -16,7 +16,7 @@ export default {
   }: {
     organizationId: string;
     agentId: string;
-    settings: AppSettings;
+    settings: Record<string, unknown>;
   }) {
     // Pre-install logic here if needed
   },
@@ -28,12 +28,16 @@ export default {
   }: {
     organizationId: string;
     agentId: string;
-    settings: AppSettings;
+    settings: Record<string, unknown>;
   }) {
     const mavenAgi = new MavenAGIClient({
       organizationId,
       agentId,
     });
+
+    // Initialize default values
+    await store().set(organizationId, agentId, LICENSE_KEY, { user_licenses: 5 });
+    await store().set(organizationId, agentId, SUBSCRIPTION_KEY, { tier: 'starter' });
 
     await resetProfiles(organizationId, agentId);
 
@@ -43,34 +47,6 @@ export default {
         actionId: { referenceId: 'get-profile' },
         name: 'Gets the user\'s profile',
         description: 'Gets the user\'s profile including name, user type, email, and membership duration',
-        userInteractionRequired: false,
-        userFormParameters: [],
-      },
-      {
-        actionId: { referenceId: 'get-current-licenses' },
-        name: 'Gets the number of user licenses and the monthly payment',
-        description: 'Gets the number of user licenses and the monthly subscription payment',
-        userInteractionRequired: false,
-        userFormParameters: [],
-      },
-      {
-        actionId: { referenceId: 'change-subscription' },
-        name: 'Change subscription',
-        description: 'Change subscription tier for account. Changes can also be upgrades and downgrades.',
-        userInteractionRequired: true,
-        userFormParameters: [
-          {
-            id: 'subscription_tier',
-            label: 'Subscription Tier',
-            description: 'The level of the account. Values can be "enterprise", "professional", or "starter".',
-            required: true,
-          },
-        ],
-      },
-      {
-        actionId: { referenceId: 'get-subscription' },
-        name: 'Get subscription',
-        description: 'Get subscription tier',
         userInteractionRequired: false,
         userFormParameters: [],
       },
@@ -94,9 +70,6 @@ export default {
     parameters: Record<string, any>;
     user: { defaultUserData: { userId: string } };
   }) {
-    console.log('user', user);
-    console.log('parameters', parameters);
-
     const userId = user?.defaultUserData?.userId ?? users[0]?.id;
 
     switch (actionId) {
@@ -107,7 +80,7 @@ export default {
 
       case 'get-current-licenses':
         return JSON.stringify(
-          await redisStore().getLicenses(organizationId, agentId)
+          await store().get(organizationId, agentId, LICENSE_KEY)
         );
 
       case 'change-subscription': {
@@ -115,39 +88,44 @@ export default {
         if (!['enterprise', 'professional', 'starter'].includes(tier)) {
           return JSON.stringify({
             success: false,
-            message: 'Invalid subscription tier. Valid values are "enterprise", "professional", or "starter".',
+            message: 'Invalid subscription tier. Valid values are "Enterprise", "Professional", or "Starter".',
           });
         }
+
+        await store().set(organizationId, agentId, SUBSCRIPTION_KEY, { tier });
+        const licenses = await store().get(organizationId, agentId, LICENSE_KEY);
+        
         return JSON.stringify({
-          subscription: await redisStore().setSubscription(organizationId, agentId, tier),
-          licenses: await redisStore().getLicenses(organizationId, agentId),
+          subscription: { tier },
+          licenses,
           success: true,
           message: `Subscription successfully changed to ${tier}.`,
         });
       }
 
       case 'get-subscription':
-        return JSON.stringify({
-          subscription: await redisStore().getSubscription(organizationId, agentId),
-          licenses: await redisStore().getLicenses(organizationId, agentId),
-        });
+        const [subscription, licenses] = await Promise.all([
+          store().get(organizationId, agentId, SUBSCRIPTION_KEY),
+          store().get(organizationId, agentId, LICENSE_KEY)
+        ]);
+        return JSON.stringify({ subscription, licenses });
 
       case 'add-licenses': {
-        const licenses = await redisStore().getLicenses(organizationId, agentId);
-        const count = licenses?.user_licenses ?? 0;
+        const licenses = await store().get(organizationId, agentId, LICENSE_KEY) || { user_licenses: 0 };
+        const count = licenses.user_licenses;
         const addedLicenses = Number(parameters.count);
-        return JSON.stringify(
-          await redisStore().setLicenses(organizationId, agentId, count + addedLicenses)
-        );
+        const newLicenses = { user_licenses: count + addedLicenses };
+        await store().set(organizationId, agentId, LICENSE_KEY, newLicenses);
+        return JSON.stringify(newLicenses);
       }
 
       case 'remove-licenses': {
-        const licenses = await redisStore().getLicenses(organizationId, agentId);
-        const count = licenses?.user_licenses ?? 0;
+        const licenses = await store().get(organizationId, agentId, LICENSE_KEY) || { user_licenses: 0 };
+        const count = licenses.user_licenses;
         const removedLicenses = Number(parameters.count);
-        return JSON.stringify(
-          await redisStore().setLicenses(organizationId, agentId, Math.max(0, count - removedLicenses))
-        );
+        const newLicenses = { user_licenses: Math.max(0, count - removedLicenses) };
+        await store().set(organizationId, agentId, LICENSE_KEY, newLicenses);
+        return JSON.stringify(newLicenses);
       }
 
       case 'delete-case': {
