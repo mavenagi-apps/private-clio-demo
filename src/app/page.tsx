@@ -7,9 +7,7 @@ export default async function Page({
   searchParams?: { [key: string]: string | string[] | undefined },
 }) {
   const userId = searchParams?.userId as string || users[0].id;
-  console.log('userId', userId);
   const user = users.find(u => u.id === userId)!;
-  console.log('user', user);
   
   const userData = await secureUserData({
     id: user.id,
@@ -40,27 +38,21 @@ export default async function Page({
           height: '100vh'
         }}
       >
-        <div id="maven-chat-widget"></div>
-        <script 
+        <script src="https://chat.onmaven.app/js/widget.js" defer></script>
+        <script
           dangerouslySetInnerHTML={{
             __html: `
               addEventListener("load", function () {
-                const script = document.createElement('script');
-                script.src = 'https://chat.onmaven.app/js/widget.js';
-                script.defer = true;
-                script.onload = function() {
-                  Maven.ChatWidget.load({
-                    orgFriendlyId: "clio",
-                    agentFriendlyId: "support",
-                    bgColor: "#3464DC",
-                    signedUserData: "${userData}"
-                  });
-                };
-                document.body.appendChild(script);
+                Maven.ChatWidget.load({
+                  orgFriendlyId: "clio",
+                  agentFriendlyId: "support",
+                  bgColor: "#3464DC",
+                  signedUserData: "${userData}"
+                })
               });
             `
           }}
-        />
+        ></script>
       </div>
     </>
   );
