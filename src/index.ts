@@ -41,7 +41,7 @@ export default {
       {
         actionId: { referenceId: 'get-profile' },
         name: 'Gets the user\'s profile',
-        description: 'Gets the user\'s profile including name, user type, email, location, and membership duration',
+        description: 'Gets the user\'s profile including name, user type, email, and membership duration',
         userInteractionRequired: false,
         userFormParameters: [],
       },
