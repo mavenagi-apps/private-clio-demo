@@ -1,4 +1,4 @@
-import { UserInfo, secureUserData } from '@/security';
+import {UserInfo, secureUserData} from '@/security';
 import { users } from '@/users';
 
 export default async function Page({
@@ -36,13 +36,14 @@ export default async function Page({
         ))}
       </div>
       <div 
-        className="h-screen bg-cover"
         style={{
-          backgroundImage: 'url(/background.jpg)'
+          backgroundImage: 'url(/background.jpg)',
+          backgroundSize: 'cover',
+          height: '100vh'
         }}
       >
         <script src="https://chat.onmaven.app/js/widget.js" defer></script>
-        <script 
+        <script
           dangerouslySetInnerHTML={{
             __html: `
               addEventListener("load", function () {
@@ -53,9 +54,9 @@ export default async function Page({
                   signedUserData: "${userData}"
                 })
               });
-            `
+            `,
           }}
-        ></script>
+        />
       </div>
     </>
   );
