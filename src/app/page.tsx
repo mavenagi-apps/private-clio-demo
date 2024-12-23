@@ -19,8 +19,6 @@ export default async function Page({
     email: user.email,
   } as Record<string, string> & UserInfo);
 
-  console.log('userData', userData);
-
   return (
     <>
       <div className="bg-blue-600 text-white text-xs p-5">
@@ -42,19 +40,25 @@ export default async function Page({
           height: '100vh'
         }}
       >
-        <script src="https://chat.onmaven.app/js/widget.js" defer></script>
-        <script
+        <div id="maven-chat-widget"></div>
+        <script 
           dangerouslySetInnerHTML={{
             __html: `
               addEventListener("load", function () {
-                Maven.ChatWidget.load({
-                  orgFriendlyId: "clio",
-                  agentFriendlyId: "support",
-                  bgColor: "#3464DC",
-                  signedUserData: "${userData}"
-                })
+                const script = document.createElement('script');
+                script.src = 'https://chat.onmaven.app/js/widget.js';
+                script.defer = true;
+                script.onload = function() {
+                  Maven.ChatWidget.load({
+                    orgFriendlyId: "clio",
+                    agentFriendlyId: "support",
+                    bgColor: "#3464DC",
+                    signedUserData: "${userData}"
+                  });
+                };
+                document.body.appendChild(script);
               });
-            `,
+            `
           }}
         />
       </div>
