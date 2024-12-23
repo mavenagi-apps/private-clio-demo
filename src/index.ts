@@ -2,6 +2,7 @@ import { resetProfiles, setProfile, getProfile } from './data';
 import { MavenAGIClient } from 'mavenagi';
 import { cases } from "@/cases";
 import { users } from "@/users";
+import { store as redisStore } from "@/redis";
 
 // Stripe-provided test key for demo purposes.
 const STRIPE_TEST_KEY = 'sk_test_4eC39HqLyjWDarjtT1zdp7dc';
