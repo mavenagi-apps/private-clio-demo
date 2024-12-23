@@ -1,12 +1,29 @@
+'use client';
+
 import { UserInfo, secureUserData } from '@/security';
 import { users } from '@/users';
+
+// Add type for Maven global object
+declare global {
+  interface Window {
+    Maven?: {
+      ChatWidget?: {
+        load: (config: {
+          orgFriendlyId: string;
+          agentFriendlyId: string;
+          bgColor: string;
+          signedUserData: string;
+        }) => void;
+      };
+    };
+  }
+}
 
 export default async function Page({
   searchParams,
 }: {
   searchParams?: { [key: string]: string | string[] | undefined },
 }) {
-
   const userId = searchParams?.userId as string || users[0].id;
   console.log('userId', userId);
   const user = users.find(u => u.id === userId)!;
@@ -24,8 +41,8 @@ export default async function Page({
 
   return (
     <>
-      <div className="bg-[#3464DC] text-white text-xs p-5">
-        Logged in as:  {`${user.firstName} (${user.last_location.country}) - ${user.companyName}`}
+      <div className="bg-blue-600 text-white text-xs p-5">
+        Logged in as:  {`${user.firstName} - ${user.companyName}`}
         <br />
         Login as:&nbsp;&nbsp;
         {users.map(u => (
@@ -37,13 +54,13 @@ export default async function Page({
         ))}
       </div>
       <div 
+        className="h-screen"
         style={{
           backgroundImage: 'url(/background.jpg)',
           backgroundSize: 'cover',
-          height: '100vh'
         }}
       >
-        <script src='https://chat.onmaven.app/js/widget.js' defer></script>
+        <script src="https://chat.onmaven.app/js/widget.js" defer />
         <script
           dangerouslySetInnerHTML={{
             __html: `

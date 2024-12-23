@@ -1,9 +1,5 @@
 import {Case, cases} from "@/cases";
 
-export interface Location {
-  country: string;
-}
-
 
 export interface User {
   id: string;
