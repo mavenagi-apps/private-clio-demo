@@ -1,4 +1,4 @@
-import {Invoice, invoices} from "@/invoices";
+import {Case, cases} from "@/cases";
 
 export interface Location {
   country: string;
