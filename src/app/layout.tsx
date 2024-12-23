@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Clio",
-  description: "Software made for law firms, loved by clients.",
+  description: "Legal Practice Management Software",
 };
 
 export default function RootLayout({
@@ -16,10 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <Suspense>
     <html lang="en">
       <body className={inter.className}>{children}</body>
     </html>
-      </Suspense>
   );
 }
