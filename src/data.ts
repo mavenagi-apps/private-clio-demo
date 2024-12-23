@@ -28,7 +28,7 @@ export const setProfile = async (
       userType: { value: user.userType, visibility: 'VISIBLE' },
       email: { value: user.email, visibility: 'VISIBLE' },
       companyName: { value: user.companyName, visibility: 'VISIBLE' },
-      products: { value: user.products, visibility: 'VISIBLE' },
+      products: { value: user.products.join(', '), visibility: 'VISIBLE' },
       memberSince: { value: user.memberSince, visibility: 'VISIBLE' },
       userId: { value: user.id, visibility: 'VISIBLE' }
     },
