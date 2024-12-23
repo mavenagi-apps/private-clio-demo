@@ -1,5 +1,6 @@
 import { UserInfo, secureUserData } from '@/security';
 import { users } from '@/users';
+import Script from 'next/script';
 
 export default async function Page({
   searchParams,
@@ -41,21 +42,23 @@ export default async function Page({
           backgroundImage: 'url(/background.jpg)'
         }}
       >
-        <script src="https://chat.onmaven.app/js/widget.js" defer></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              addEventListener("load", function () {
-                Maven.ChatWidget.load({
-                  orgFriendlyId: "clio",
-                  agentFriendlyId: "support",
-                  bgColor: "#3464DC",
-                  signedUserData: "${userData}"
-                })
-              });
-            `,
-          }}
-        />
+        <Script src="https://chat.onmaven.app/js/widget.js" strategy="afterInteractive" />
+        <Script id="maven-config" strategy="afterInteractive">
+          {`
+            window.addEventListener('load', function() {
+              setTimeout(() => {
+                if (typeof Maven !== 'undefined' && Maven.ChatWidget) {
+                  Maven.ChatWidget.load({
+                    orgFriendlyId: "clio",
+                    agentFriendlyId: "support",
+                    bgColor: "#3464DC",
+                    signedUserData: "${userData}"
+                  });
+                }
+              }, 1000);
+            });
+          `}
+        </Script>
       </div>
     </>
   );
