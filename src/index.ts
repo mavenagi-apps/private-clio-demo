@@ -1,4 +1,4 @@
-import {chartData, resetProfiles, setProfile, getProfile} from './data';
+import {resetProfiles, setProfile, getProfile} from './data';
 import {MavenAGIClient} from 'mavenagi';
 import {cases} from "@/cases";
 import {users} from "@/users";
