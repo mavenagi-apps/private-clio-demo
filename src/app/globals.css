@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 27, 38, 61;  /* Dark blue text color from Clio */
+  --background-start-rgb: 255, 255, 255;  /* Pure white background */
+  --background-end-rgb: 255, 255, 255;  /* Pure white background */
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --foreground-rgb: 27, 38, 61;  /* Keeping the same dark blue text */
+    --background-start-rgb: 255, 255, 255;  /* White background */
+    --background-end-rgb: 255, 255, 255;  /* White background */
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
