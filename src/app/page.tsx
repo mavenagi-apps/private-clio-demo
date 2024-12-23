@@ -1,74 +1,25 @@
-'use client';
-
-import { useEffect } from 'react';
 import { UserInfo, secureUserData } from '@/security';
 import { users } from '@/users';
 
-declare global {
-  interface Window {
-    Maven?: {
-      ChatWidget?: {
-        load: (config: {
-          orgFriendlyId: string;
-          agentFriendlyId: string;
-          bgColor: string;
-          signedUserData: string;
-        }) => void;
-      };
-    };
-  }
-}
-
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
   searchParams?: { [key: string]: string | string[] | undefined },
 }) {
   const userId = searchParams?.userId as string || users[0].id;
-  const user = users.find(u => u.id === userId);
+  console.log('userId', userId);
+  const user = users.find(u => u.id === userId)!;
+  console.log('user', user);
+  
+  const userData = await secureUserData({
+    id: user.id,
+    name: user.firstName + ' ' + user.lastName,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+  } as Record<string, string> & UserInfo);
 
-  useEffect(() => {
-    async function initializeMaven() {
-      if (!user) return;
-
-      try {
-        const userData = await secureUserData({
-          id: user.id,
-          name: user.firstName + ' ' + user.lastName,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-        } as Record<string, string> & UserInfo);
-
-        const script = document.createElement('script');
-        script.src = 'https://chat.onmaven.app/js/widget.js';
-        script.defer = true;
-        script.onload = () => {
-          window.Maven?.ChatWidget?.load({
-            orgFriendlyId: "clio",
-            agentFriendlyId: "support",
-            bgColor: "#3464DC",
-            signedUserData: userData
-          });
-        };
-        document.body.appendChild(script);
-
-        return () => {
-          if (script.parentNode) {
-            script.parentNode.removeChild(script);
-          }
-        };
-      } catch (error) {
-        console.error('Error initializing Maven:', error);
-      }
-    }
-
-    initializeMaven();
-  }, [user]);
-
-  if (!user) {
-    return <div>Loading...</div>;
-  }
+  console.log('userData', userData);
 
   return (
     <>
@@ -89,7 +40,23 @@ export default function Page({
         style={{
           backgroundImage: 'url(/background.jpg)'
         }}
-      />
+      >
+        <script src="https://chat.onmaven.app/js/widget.js" defer></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              addEventListener("load", function () {
+                Maven.ChatWidget.load({
+                  orgFriendlyId: "clio",
+                  agentFriendlyId: "support",
+                  bgColor: "#3464DC",
+                  signedUserData: "${userData}"
+                })
+              });
+            `,
+          }}
+        />
+      </div>
     </>
   );
 }
