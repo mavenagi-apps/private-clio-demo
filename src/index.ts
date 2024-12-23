@@ -1,6 +1,6 @@
 import {chartData, resetProfiles, setProfile, getProfile} from './data';
 import {MavenAGIClient} from 'mavenagi';
-import {invoices} from "@/invoices";
+import {cases} from "@/cases";
 import {users} from "@/users";
 
 // Stripe-provided test key. Enables this app to work as a demo even if you don't have a real Stripe account.
