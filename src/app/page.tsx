@@ -38,14 +38,14 @@ export default async function Page({
           height: '100vh'
         }}
       >
-        <script src="https://chat.onmaven.app/js/widget.js" defer></script>
+        <script src="https://chatbot.onmaven.app/widget.js" defer></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               addEventListener("load", function () {
                 Maven.ChatWidget.load({
-                  orgFriendlyId: "clio",
-                  agentFriendlyId: "support",
+                  organizationId: "clio",
+                  agentId: "support",
                   bgColor: "#3464DC",
                   signedUserData: "${userData}"
                 })
