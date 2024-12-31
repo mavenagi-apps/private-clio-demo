@@ -8,7 +8,7 @@ export interface User {
   userType: string;
   email: string;
   companyName: string;
-  products: string[];
+  products: string;
   memberSince: string;
 }
 
@@ -21,7 +21,7 @@ export const users = [
     userType: 'Admin',
     email: 'matt@biglawfirm.com',
     companyName: "Big Law Firm",
-    products: ["Clio Manage", "Clio Grow"],
+    products: "Clio Manage",
     memberSince: '2022-01-31',
   },
   {
@@ -31,7 +31,7 @@ export const users = [
     userType: 'Employee',
     email: 'rustom@biglawfirm.com',
     companyName: "Big Law Firm",
-    products: ["Clio Grow", "Clio Draft"],
+    products: "Clio Grow",
     memberSince: '2024-07-15',
   },
 ] as User[];

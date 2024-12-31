@@ -21,11 +21,15 @@ export const setProfile = async (
   await mavenAgi.users.createOrUpdate({
     userId: { referenceId: user.id },
     data: {
-      name: { value: `${user.firstName} ${user.lastName}`, visibility: 'VISIBLE' },
-      identifiers: [
-        { value: user.email, type: 'EMAIL', visibility: 'VISIBLE' },
-      ],
-    },
+        firstName: { value: user.firstName, visibility: 'VISIBLE' },
+        lastName: { value: user.lastName, visibility: 'VISIBLE' },
+        userType: { value: user.userType, visibility: 'VISIBLE' },
+        email: { value: user.email, visibility: 'VISIBLE' },
+        companyName: { value: user.companyName, visibility: 'VISIBLE' },
+        products: { value: user.products, visibility: 'VISIBLE' },
+        memberSince: { value: user.memberSince, visibility: 'VISIBLE' },
+        userId: { value: user.id, visibility: 'VISIBLE' }
+      },
   });
 };
 
