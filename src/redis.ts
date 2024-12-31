@@ -29,75 +29,73 @@ const getPrice = (sub: string) => {
   return price;
 };
 
-export const redisStore = () => {
-  return {
-    async set(key: string, value: any): Promise<void> {
-      const redis = await getRedisClient();
-      await redis.json.set(key, '$', value);
-    },
+export const redisStore = {
+  async set(key: string, value: any): Promise<void> {
+    const redis = await getRedisClient();
+    await redis.json.set(key, '$', value);
+  },
 
-    async get(key: string): Promise<any> {
-      const redis = await getRedisClient();
-      return await redis.json.get(key);
-    },
+  async get(key: string): Promise<any> {
+    const redis = await getRedisClient();
+    return await redis.json.get(key);
+  },
 
-    async setLicenses(
-      organizationId: string,
-      agentId: string,
-      licenseCount: number
-    ): Promise<any> {
-      const key = `${organizationId}:${agentId}:licenses`;
-      if (typeof licenseCount !== 'number') {
-        licenseCount = Number(licenseCount);
-      }
-      const licenses = { user_licenses: licenseCount };
-      await this.set(key, licenses);
-      const subName = (await this.getSubscription(organizationId, agentId)).tier;
-      return {
-        user_licenses: licenses.user_licenses,
-        subscription: subName,
-        monthly_price_per_user: getPrice(subName),
-        monthly_subscription_price_in_dollars: licenseCount * getPrice(subName),
-      };
-    },
+  async setLicenses(
+    organizationId: string,
+    agentId: string,
+    licenseCount: number
+  ): Promise<any> {
+    const key = `${organizationId}:${agentId}:licenses`;
+    if (typeof licenseCount !== 'number') {
+      licenseCount = Number(licenseCount);
+    }
+    const licenses = { user_licenses: licenseCount };
+    await this.set(key, licenses);
+    const subName = (await this.getSubscription(organizationId, agentId)).tier;
+    return {
+      user_licenses: licenses.user_licenses,
+      subscription: subName,
+      monthly_price_per_user: getPrice(subName),
+      monthly_subscription_price_in_dollars: licenseCount * getPrice(subName),
+    };
+  },
 
-    async getLicenses(organizationId: string, agentId: string): Promise<any> {
-      const key = `${organizationId}:${agentId}:licenses`;
-      const licenses = (await this.get(key)) || { user_licenses: 5 };
-      const subName = (await this.getSubscription(organizationId, agentId)).tier;
-      return {
-        user_licenses: licenses.user_licenses,
-        subscription: subName,
-        monthly_price_per_user: getPrice(subName),
-        monthly_subscription_price_in_dollars:
-          licenses.user_licenses * getPrice(subName),
-      };
-    },
+  async getLicenses(organizationId: string, agentId: string): Promise<any> {
+    const key = `${organizationId}:${agentId}:licenses`;
+    const licenses = (await this.get(key)) || { user_licenses: 5 };
+    const subName = (await this.getSubscription(organizationId, agentId)).tier;
+    return {
+      user_licenses: licenses.user_licenses,
+      subscription: subName,
+      monthly_price_per_user: getPrice(subName),
+      monthly_subscription_price_in_dollars:
+        licenses.user_licenses * getPrice(subName),
+    };
+  },
 
-    async setSubscription(
-      organizationId: string,
-      agentId: string,
-      tier: string
-    ): Promise<any> {
-      const key = `${organizationId}:${agentId}:subscription`;
-      tier = tier.toLowerCase();
-      if (!['starter', 'professional', 'enterprise'].includes(tier)) {
-        tier = 'enterprise';
-      }
-      const subscription = { tier };
-      await this.set(key, subscription);
-      return subscription;
-    },
+  async setSubscription(
+    organizationId: string,
+    agentId: string,
+    tier: string
+  ): Promise<any> {
+    const key = `${organizationId}:${agentId}:subscription`;
+    tier = tier.toLowerCase();
+    if (!['starter', 'professional', 'enterprise'].includes(tier)) {
+      tier = 'enterprise';
+    }
+    const subscription = { tier };
+    await this.set(key, subscription);
+    return subscription;
+  },
 
-    async getSubscription(
-      organizationId: string,
-      agentId: string
-    ): Promise<any> {
-      const key = `${organizationId}:${agentId}:subscription`;
-      const subscription = await this.get(key);
-      return subscription || { tier: 'starter' };
-    },
-  };
+  async getSubscription(
+    organizationId: string,
+    agentId: string
+  ): Promise<any> {
+    const key = `${organizationId}:${agentId}:subscription`;
+    const subscription = await this.get(key);
+    return subscription || { tier: 'starter' };
+  },
 };
 
-export const store = redisStore();
+export const store = redisStore;
