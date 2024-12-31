@@ -10,16 +10,18 @@ export const setProfile = async (
   user: User
 ) => {
   const mavenAgi = new MavenAGIClient({
-    organizationId,
-    agentId,
+    organizationId: organizationId,
+    agentId: agentId,
   });
 
   // Set initial profile data on install
   await redisStore().set(organizationId, agentId, `${user.id}:${PROFILE}`, user);
 
-  // Update user profile using the correct API structure
   await mavenAgi.users.createOrUpdate({
     userId: { referenceId: user.id },
+    identifiers: [
+        { type: 'EMAIL', value: user.email}
+    ],
     data: {
         firstName: { value: user.firstName, visibility: 'VISIBLE' },
         lastName: { value: user.lastName, visibility: 'VISIBLE' },
@@ -31,23 +33,38 @@ export const setProfile = async (
         userId: { value: user.id, visibility: 'VISIBLE' }
       },
   });
-};
-
-export const getProfile = async (
-  organizationId: string,
-  agentId: string,
-  userId: string
-) => {
-  const redis = redisStore();
-  const profile = await redis.get(`${organizationId}:${agentId}:${userId}:${PROFILE}`);
-  return profile || users.find(user => user.id === userId);
-};
+}
 
 export const resetProfiles = async (
-  organizationId: string,
-  agentId: string
+    organizationId: string,
+    agentId: string,
 ) => {
-  const redis = redisStore();
-  await redis.set(`${organizationId}:${agentId}:profiles`, users);
-  return users;
+  const mavenAgi = new MavenAGIClient({
+    organizationId: organizationId,
+    agentId: agentId,
+  });
+
+  users.map(async (user) => {
+    await setProfile(organizationId, agentId, user);
+  });
+  return {success: true};
+}
+
+export const getProfile = async (
+    organizationId: string,
+    agentId: string,
+    userId: string
+): Promise<User & {
+  ageInDays: number;
+}> => {
+  const profile = await redisStore().get(organizationId, agentId, `${userId}:${PROFILE}`);
+  console.log('profile', profile)
+  const memberSince = new Date(profile.memberSince);
+  const currentDate = new Date();
+  const ageInDays = (currentDate.getTime() - memberSince.getTime()) / (1000 * 60 * 60 * 24);
+  console.log('ageInDays', ageInDays);
+  return {
+    ...profile,
+    ageInDays: Math.floor(ageInDays),
+  };
 };
