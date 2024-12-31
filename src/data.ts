@@ -17,13 +17,14 @@ export const setProfile = async (
   // Set initial profile data on install
   await redisStore().set(organizationId, agentId, `${user.id}:${PROFILE}`, user);
 
+  // Update user profile using the correct API structure
   await mavenAgi.users.createOrUpdate({
     userId: { referenceId: user.id },
     data: {
-       name: { value: user.name, visibility: "VISIBLE" }
-       identifiers: [ { value: user.email, type: "EMAIL" } ]
-    }
-});
+      name: { value: user.name, visibility: 'VISIBLE' },
+      identifiers: [{ value: user.email, type: 'EMAIL' }],
+    },
+  });
 };
 
 export const getProfile = async (
