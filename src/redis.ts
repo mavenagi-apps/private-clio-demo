@@ -119,3 +119,5 @@ export const redisStore = () => {
     },
   };
 };
+
+export const store = redisStore;

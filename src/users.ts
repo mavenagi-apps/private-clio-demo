@@ -16,10 +16,10 @@ export interface User {
 export const users = [
   {
     id: '112',
-    firstName: 'Justin',
-    lastName: 'Wright',
+    firstName: 'Matt',
+    lastName: 'Bigelow',
     userType: 'Admin',
-    email: 'justin@biglawfirm.com',
+    email: 'matt@biglawfirm.com',
     companyName: "Big Law Firm",
     products: ["Clio Manage", "Clio Grow"],
     memberSince: '2022-01-31',
