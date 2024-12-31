@@ -21,38 +21,38 @@ export async function getRedisClient() {
 
 const getPrice = (sub: string) => {
   let price = PRICE_PER_USER_MONTH;
-  console.log('Calculating price for subscription tier:', sub);
   if (sub === 'professional') {
     price *= 1.5;
   } else if (sub === 'enterprise') {
     price *= 2;
   }
-  console.log('Price per user:', price);
   return price;
 };
 
 export const redisStore = () => {
   return {
+    async set(key: string, value: any): Promise<void> {
+      const redis = await getRedisClient();
+      await redis.json.set(key, '$', value);
+    },
+
+    async get(key: string): Promise<any> {
+      const redis = await getRedisClient();
+      return await redis.json.get(key);
+    },
+
     async setLicenses(
       organizationId: string,
       agentId: string,
       licenseCount: number
     ): Promise<any> {
-      const redis = await getRedisClient();
+      const key = `${organizationId}:${agentId}:licenses`;
       if (typeof licenseCount !== 'number') {
         licenseCount = Number(licenseCount);
       }
-      const licenses = {
-        user_licenses: licenseCount,
-      };
-      console.log('Setting licenses:', licenses);
-      await redis.json.set(
-        `${organizationId}:${agentId}:licenses`,
-        '$',
-        licenses
-      );
-      const subName = (await this.getSubscription(organizationId, agentId))
-        .tier;
+      const licenses = { user_licenses: licenseCount };
+      await this.set(key, licenses);
+      const subName = (await this.getSubscription(organizationId, agentId)).tier;
       return {
         user_licenses: licenses.user_licenses,
         subscription: subName,
@@ -62,20 +62,15 @@ export const redisStore = () => {
     },
 
     async getLicenses(organizationId: string, agentId: string): Promise<any> {
-      const redis = await getRedisClient();
-      const licenses = (await redis.json.get(
-        `${organizationId}:${agentId}:licenses`
-      )) as any;
-      console.log('Retrieved licenses:', licenses);
-      const subName = (await this.getSubscription(organizationId, agentId))
-        .tier;
-      const user_licenses = licenses?.user_licenses || 5;
+      const key = `${organizationId}:${agentId}:licenses`;
+      const licenses = (await this.get(key)) || { user_licenses: 5 };
+      const subName = (await this.getSubscription(organizationId, agentId)).tier;
       return {
-        user_licenses,
+        user_licenses: licenses.user_licenses,
         subscription: subName,
         monthly_price_per_user: getPrice(subName),
         monthly_subscription_price_in_dollars:
-          user_licenses * getPrice(subName),
+          licenses.user_licenses * getPrice(subName),
       };
     },
 
@@ -84,21 +79,13 @@ export const redisStore = () => {
       agentId: string,
       tier: string
     ): Promise<any> {
-      const redis = await getRedisClient();
-      console.log('Setting subscription tier:', tier);
+      const key = `${organizationId}:${agentId}:subscription`;
       tier = tier.toLowerCase();
-      if (tier !== 'starter' && tier !== 'professional' && tier !== 'enterprise') {
+      if (!['starter', 'professional', 'enterprise'].includes(tier)) {
         tier = 'enterprise';
       }
-      const subscription = {
-        tier,
-      };
-      console.log('Subscription object:', subscription);
-      await redis.json.set(
-        `${organizationId}:${agentId}:subscription`,
-        '$',
-        subscription
-      );
+      const subscription = { tier };
+      await this.set(key, subscription);
       return subscription;
     },
 
@@ -106,18 +93,11 @@ export const redisStore = () => {
       organizationId: string,
       agentId: string
     ): Promise<any> {
-      const redis = await getRedisClient();
-      const subscription = await redis.json.get(
-        `${organizationId}:${agentId}:subscription`
-      );
-      console.log('Retrieved subscription:', subscription);
-      return (
-        subscription || {
-          tier: 'starter',
-        }
-      );
+      const key = `${organizationId}:${agentId}:subscription`;
+      const subscription = await this.get(key);
+      return subscription || { tier: 'starter' };
     },
   };
 };
 
-export const store = redisStore;
+export const store = redisStore();
