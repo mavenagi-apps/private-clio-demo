@@ -1,11 +1,8 @@
-import { resetProfiles, setProfile, getProfile } from './data';
+import { resetProfiles, setProfile, getProfile } from '@/data';
 import { MavenAGIClient } from 'mavenagi';
-import { store } from './redis';
-import { cases } from './cases';
-
-// Constants for Redis keys
-const LICENSE_KEY = 'licenses';
-const SUBSCRIPTION_KEY = 'subscription';
+import { redisStore } from '@/redis';
+import { cases } from '@/cases';
+import { AppSettings } from '@/types';
 
 export default {
   async preInstall({
@@ -15,7 +12,7 @@ export default {
   }: {
     organizationId: string;
     agentId: string;
-    settings: Record<string, unknown>;
+    settings: AppSettings;
   }) {
     // Pre-install logic here if needed
   },
@@ -27,129 +24,117 @@ export default {
   }: {
     organizationId: string;
     agentId: string;
-    settings: Record<string, unknown>;
+    settings: AppSettings;
   }) {
     const mavenAgi = new MavenAGIClient({
       organizationId,
       agentId,
     });
 
-    // Initialize default values
-    await store.set(organizationId, agentId, LICENSE_KEY, { user_licenses: 5 });
-    await store.set(organizationId, agentId, SUBSCRIPTION_KEY, { tier: 'starter' });
-
     await resetProfiles(organizationId, agentId);
 
-    // Register actions
-    const actions = [
-      {
-        actionId: { referenceId: 'get-profile' },
-        name: "Get User's Profile",
-        description: "Retrieve the user's profile, including name, user type, and more.",
-        userInteractionRequired: false,
-        userFormParameters: [],
-      },
-      {
-        actionId: { referenceId: 'get-subscription' },
-        name: 'Get Subscription Details',
-        description: 'Retrieve subscription details and associated licenses.',
-        userInteractionRequired: false,
-        userFormParameters: [],
-      },
-      {
-        actionId: { referenceId: 'change-subscription' },
-        name: 'Change Subscription',
-        description: 'Update the subscription tier for the account.',
-        userInteractionRequired: true,
-        userFormParameters: [
-          {
-            id: 'subscription_tier',
-            label: 'Subscription Tier',
-            description: 'Valid values: enterprise, professional, starter.',
-            required: true,
-          },
-        ],
-      },
-      {
-        actionId: { referenceId: 'add-licenses' },
-        name: 'Add Licenses',
-        description: 'Add user licenses to the current account.',
-        userInteractionRequired: true,
-        userFormParameters: [
-          {
-            id: 'count',
-            label: 'License Count',
-            description: 'The number of licenses to add.',
-            required: true,
-          },
-        ],
-      },
-      {
-        actionId: { referenceId: 'remove-licenses' },
-        name: 'Remove Licenses',
-        description: 'Remove user licenses from the current account.',
-        userInteractionRequired: true,
-        userFormParameters: [
-          {
-            id: 'count',
-            label: 'License Count',
-            description: 'The number of licenses to remove.',
-            required: true,
-          },
-        ],
-      },
-      {
-        actionId: { referenceId: 'get-cases' },
-        name: 'Get Cases',
-        description: 'Retrieve the list of cases.',
-        userInteractionRequired: false,
-        userFormParameters: [],
-      },
-      {
-        actionId: { referenceId: 'add-case' },
-        name: 'Add Case',
-        description: 'Add a new case to the list.',
-        userInteractionRequired: false,
-        userFormParameters: [
-          {
-            id: 'name',
-            label: 'Case Name',
-            description: 'The name of the case.',
-            required: true,
-          },
-          {
-            id: 'amount',
-            label: 'Case Amount',
-            description: 'The amount associated with the case.',
-            required: true,
-          },
-          {
-            id: 'status',
-            label: 'Case Status',
-            description: 'The status of the case.',
-            required: true,
-          },
-        ],
-      },
-      {
-        actionId: { referenceId: 'delete-case' },
-        name: 'Delete Case',
-        description: 'Delete a case from the list.',
-        userInteractionRequired: true,
-        userFormParameters: [
-          {
-            id: 'number',
-            label: 'Case Number',
-            description: 'The unique identifier of the case to delete.',
-            required: true,
-          },
-        ],
-      },
-    ];
+    // Action to get profile
+    await mavenAgi.actions.createOrUpdate({
+      actionId: { referenceId: 'get-profile' },
+      name: "Get User's Profile",
+      description: "Retrieve the user's profile, including name, user type, and more.",
+      userInteractionRequired: false,
+      userFormParameters: [],
+    });
 
-    for (const action of actions) {
-      await mavenAgi.actions.createOrUpdate(action);
-    }
+    // Action to get licenses
+    await mavenAgi.actions.createOrUpdate({
+      actionId: { referenceId: 'get-licenses' },
+      name: 'Get Licenses',
+      description: 'Retrieve the number of user licenses and associated pricing details.',
+      userInteractionRequired: false,
+      userFormParameters: [],
+    });
+
+    // Action to add licenses
+    await mavenAgi.actions.createOrUpdate({
+      actionId: { referenceId: 'add-licenses' },
+      name: 'Add Licenses',
+      description: 'Add user licenses to the current account.',
+      userInteractionRequired: true,
+      userFormParameters: [
+        {
+          id: 'count',
+          label: 'License Count',
+          description: 'The number of licenses to add.',
+          required: true,
+        },
+      ],
+    });
+
+    // Action to remove licenses
+    await mavenAgi.actions.createOrUpdate({
+      actionId: { referenceId: 'remove-licenses' },
+      name: 'Remove Licenses',
+      description: 'Remove user licenses from the current account.',
+      userInteractionRequired: true,
+      userFormParameters: [
+        {
+          id: 'count',
+          label: 'License Count',
+          description: 'The number of licenses to remove.',
+          required: true,
+        },
+      ],
+    });
+
+    // Action to get cases
+    await mavenAgi.actions.createOrUpdate({
+      actionId: { referenceId: 'get-cases' },
+      name: 'Get Cases',
+      description: 'Retrieve the list of cases.',
+      userInteractionRequired: false,
+      userFormParameters: [],
+    });
+
+    // Action to add a case
+    await mavenAgi.actions.createOrUpdate({
+      actionId: { referenceId: 'add-case' },
+      name: 'Add Case',
+      description: 'Add a new case to the list.',
+      userInteractionRequired: true,
+      userFormParameters: [
+        {
+          id: 'name',
+          label: 'Case Name',
+          description: 'The name of the case.',
+          required: true,
+        },
+        {
+          id: 'amount',
+          label: 'Case Amount',
+          description: 'The amount associated with the case.',
+          required: true,
+        },
+        {
+          id: 'status',
+          label: 'Case Status',
+          description: 'The status of the case.',
+          required: true,
+        },
+      ],
+    });
+
+    // Action to delete a case
+    await mavenAgi.actions.createOrUpdate({
+      actionId: { referenceId: 'delete-case' },
+      name: 'Delete Case (Admin Only)',
+      description: 'Delete a case from the list. This action is restricted to Admin users.',
+      userInteractionRequired: true,
+      userFormParameters: [
+        {
+          id: 'number',
+          label: 'Case Number',
+          description: 'The unique identifier of the case to delete.',
+          required: true,
+        },
+      ],
+    });
   },
 
   async executeAction({
@@ -173,29 +158,12 @@ export default {
           profile: await getProfile(organizationId, agentId, userId),
         });
 
-      case 'get-subscription':
-        const [subscription, licenses] = await Promise.all([
-          store.get(organizationId, agentId, SUBSCRIPTION_KEY),
-          store.getLicenses(organizationId, agentId),
-        ]);
-        return JSON.stringify({ subscription, ...licenses });
-
-      case 'change-subscription': {
-        const result = await store.setSubscription(
-          organizationId,
-          agentId,
-          parameters.subscription_tier
-        );
-        const licenses = await store.getLicenses(organizationId, agentId);
-        return JSON.stringify({
-          ...result,
-          ...licenses,
-        });
-      }
+      case 'get-licenses':
+        return JSON.stringify(await redisStore().getLicenses(organizationId, agentId));
 
       case 'add-licenses': {
-        const licenses = await store.getLicenses(organizationId, agentId);
-        const result = await store.setLicenses(
+        const licenses = await redisStore().getLicenses(organizationId, agentId);
+        const result = await redisStore().setLicenses(
           organizationId,
           agentId,
           licenses.user_licenses + Number(parameters.count)
@@ -204,8 +172,8 @@ export default {
       }
 
       case 'remove-licenses': {
-        const licenses = await store.getLicenses(organizationId, agentId);
-        const result = await store.setLicenses(
+        const licenses = await redisStore().getLicenses(organizationId, agentId);
+        const result = await redisStore().setLicenses(
           organizationId,
           agentId,
           Math.max(0, licenses.user_licenses - Number(parameters.count))

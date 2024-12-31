@@ -15,7 +15,7 @@ export const setProfile = async (
     });
 
   // Set initial profile data on install
-  await store.set(organizationId, agentId, `${user.id}:${PROFILE}`, user);
+  await store().set(organizationId, agentId, `${user.id}:${PROFILE}`, user);
 
   await mavenAgi.users.createOrUpdate({
     userId: { referenceId: user.id },
@@ -57,7 +57,7 @@ export const getProfile = async (
 ): Promise<User & {
   ageInDays: number;
 }> => {
-  const profile = await store.get(organizationId, agentId, `${userId}:${PROFILE}`);
+  const profile = await store().get(organizationId, agentId, `${userId}:${PROFILE}`);
   console.log('profile', profile)
   const memberSince = new Date(profile.memberSince);
   const currentDate = new Date();
