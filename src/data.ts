@@ -1,6 +1,6 @@
-import {MavenAGIClient} from "mavenagi";
-import {redisStore} from "@/redis";
-import {User, users} from '@/users';
+import { MavenAGIClient } from "mavenagi";
+import { redisStore } from "@/redis";
+import { User, users } from '@/users';
 
 const PROFILE = 'profile';
 
@@ -14,16 +14,15 @@ export const setProfile = async (
         agentId: agentId,
     });
 
-    // Set initial profile data on install
+    // Store user profile data in Redis
     await redisStore().set(organizationId, agentId, `${user.id}:${PROFILE}`, user);
 
+    // Create or update the user with flattened fields
     await mavenAgi.users.createOrUpdate({
         userId: { referenceId: user.id },
-        profile: {
-            name: user.name,  // Adjusted to match expected type
-            userType: user.userType,  // Adjusted to match expected type
-            email: user.email,  // Adjusted to match expected type
-        },
+        name: user.name,       // Adjusted to match the API schema
+        email: user.email,     // Adjusted to match the API schema
+        role: user.userType,   // Adjusted to match the API schema
     });
 };
 
