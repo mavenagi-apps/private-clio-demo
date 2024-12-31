@@ -19,9 +19,11 @@ export const setProfile = async (
 
   await mavenAgi.users.createOrUpdate({
     userId: { referenceId: user.id },
-    name: user.name,
-    userType: user.userType,
-    email: user.email,
+    profileData: {
+      userName: user.name,  // Adjusted to match expected type
+      role: user.userType,  // Adjusted to match expected type
+      contact: user.email,  // Adjusted to match expected type
+    },
   });
 };
 
