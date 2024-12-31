@@ -25,7 +25,7 @@ export default {
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'get-profile' },
       name: "Get User's Profile",
-      description: "Retrieve the user's profile, including name, user type, and more.",
+      description: "Retrieve the user's profile, including name, user type, and email.",
       userInteractionRequired: false,
       userFormParameters: [],
     });
@@ -33,7 +33,7 @@ export default {
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'get-licenses' },
       name: 'Get Licenses',
-      description: 'Retrieve the number of user licenses.',
+      description: 'Retrieve the current number of user licenses.',
       userInteractionRequired: false,
       userFormParameters: [],
     });
@@ -47,7 +47,7 @@ export default {
         {
           id: 'count',
           label: 'License Count',
-          description: 'The number of licenses to add.',
+          description: 'Number of licenses to add.',
           required: true,
         },
       ],
@@ -56,13 +56,13 @@ export default {
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'remove-licenses' },
       name: 'Remove Licenses',
-      description: 'Remove user licenses from the current account.',
+      description: 'Remove user licenses from the account.',
       userInteractionRequired: true,
       userFormParameters: [
         {
           id: 'count',
           label: 'License Count',
-          description: 'The number of licenses to remove.',
+          description: 'Number of licenses to remove.',
           required: true,
         },
       ],
@@ -79,25 +79,25 @@ export default {
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'add-case' },
       name: 'Add Case',
-      description: 'Add a new case to the list.',
+      description: 'Add a new case to the case list.',
       userInteractionRequired: true,
       userFormParameters: [
         {
           id: 'name',
           label: 'Case Name',
-          description: 'The name of the case.',
+          description: 'Name of the case.',
           required: true,
         },
         {
           id: 'amount',
           label: 'Case Amount',
-          description: 'The amount associated with the case.',
+          description: 'Amount associated with the case.',
           required: true,
         },
         {
           id: 'status',
           label: 'Case Status',
-          description: 'The status of the case.',
+          description: 'Current status of the case.',
           required: true,
         },
       ],
@@ -106,13 +106,13 @@ export default {
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'delete-case' },
       name: 'Delete Case (Admin Only)',
-      description: 'Delete a case from the list. This action is restricted to Admin users.',
+      description: 'Delete a case. Admin users only.',
       userInteractionRequired: true,
       userFormParameters: [
         {
           id: 'number',
           label: 'Case Number',
-          description: 'The unique identifier of the case to delete.',
+          description: 'Unique identifier of the case to delete.',
           required: true,
         },
       ],
@@ -158,9 +158,7 @@ export default {
       }
 
       case 'get-cases':
-        return JSON.stringify({
-          cases,
-        });
+        return JSON.stringify({ cases });
 
       case 'add-case': {
         const newCase = {
