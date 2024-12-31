@@ -21,15 +21,32 @@ const PRICE_PER_USER_MONTH = 50.0;
 
 export const redisStore = () => {
   return {
-    async set(key: string, value: any) {
+    async set(
+      organizationId: string,
+      agentId: string,
+      key: string,
+      data: any
+    ): Promise<any> {
       const redis = await getRedisClient();
-      await redis.set(key, JSON.stringify(value));
+      console.log('redis.set', key, data);
+      await redis.json.set(
+        `${organizationId}:${agentId}:${key}`,
+        '$',
+        data
+      );
+      return data;
     },
 
-    async get(key: string) {
+    async get(
+      organizationId: string,
+      agentId: string,
+      key: string
+    ): Promise<any> {
       const redis = await getRedisClient();
-      const value = await redis.get(key);
-      return value ? JSON.parse(value) : null;
+      const data = await redis.json.get(
+        `${organizationId}:${agentId}:${key}`
+      );
+      return data;
     },
 
     async setLicenses(organizationId: string, agentId: string, licenseCount: number) {
