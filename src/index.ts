@@ -5,35 +5,23 @@ import { cases } from '@/cases';
 import { AppSettings } from '@/types';
 
 export default {
-  async preInstall({
-    organizationId,
-    agentId,
-    settings,
-  }: {
+  async preInstall({ organizationId, agentId, settings }: {
     organizationId: string;
     agentId: string;
     settings: AppSettings;
   }) {
-    // Pre-install logic here if needed
+    // Pre-install logic if needed
   },
 
-  async postInstall({
-    organizationId,
-    agentId,
-    settings,
-  }: {
+  async postInstall({ organizationId, agentId, settings }: {
     organizationId: string;
     agentId: string;
     settings: AppSettings;
   }) {
-    const mavenAgi = new MavenAGIClient({
-      organizationId,
-      agentId,
-    });
+    const mavenAgi = new MavenAGIClient({ organizationId, agentId });
 
     await resetProfiles(organizationId, agentId);
 
-    // Action to get profile
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'get-profile' },
       name: "Get User's Profile",
@@ -42,16 +30,14 @@ export default {
       userFormParameters: [],
     });
 
-    // Action to get licenses
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'get-licenses' },
       name: 'Get Licenses',
-      description: 'Retrieve the number of user licenses and associated pricing details.',
+      description: 'Retrieve the number of user licenses.',
       userInteractionRequired: false,
       userFormParameters: [],
     });
 
-    // Action to add licenses
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'add-licenses' },
       name: 'Add Licenses',
@@ -67,7 +53,6 @@ export default {
       ],
     });
 
-    // Action to remove licenses
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'remove-licenses' },
       name: 'Remove Licenses',
@@ -83,7 +68,6 @@ export default {
       ],
     });
 
-    // Action to get cases
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'get-cases' },
       name: 'Get Cases',
@@ -92,7 +76,6 @@ export default {
       userFormParameters: [],
     });
 
-    // Action to add a case
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'add-case' },
       name: 'Add Case',
@@ -120,7 +103,6 @@ export default {
       ],
     });
 
-    // Action to delete a case
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'delete-case' },
       name: 'Delete Case (Admin Only)',
@@ -137,13 +119,7 @@ export default {
     });
   },
 
-  async executeAction({
-    organizationId,
-    agentId,
-    actionId,
-    parameters,
-    user,
-  }: {
+  async executeAction({ organizationId, agentId, actionId, parameters, user }: {
     organizationId: string;
     agentId: string;
     actionId: string;
@@ -188,7 +164,7 @@ export default {
 
       case 'add-case': {
         const newCase = {
-          number: cases.length + 1, // Auto-incrementing case number
+          number: cases.length + 1,
           name: parameters.name,
           amount: parameters.amount,
           status: parameters.status,

@@ -14,17 +14,17 @@ export const setProfile = async (
         agentId: agentId,
     });
 
-  // Set initial profile data on install
-  await redisStore().set(organizationId, agentId, `${user.id}:${PROFILE}`, user);
+    // Set initial profile data on install
+    await redisStore().set(organizationId, agentId, `${user.id}:${PROFILE}`, user);
 
-  await mavenAgi.users.createOrUpdate({
-    userId: { referenceId: user.id },
-    profileData: {
-      userName: user.name,  // Adjusted to match expected type
-      role: user.userType,  // Adjusted to match expected type
-      contact: user.email,  // Adjusted to match expected type
-    },
-  });
+    await mavenAgi.users.createOrUpdate({
+        userId: { referenceId: user.id },
+        profile: {
+            name: user.name,  // Adjusted to match expected type
+            userType: user.userType,  // Adjusted to match expected type
+            email: user.email,  // Adjusted to match expected type
+        },
+    });
 };
 
 export const getProfile = async (
