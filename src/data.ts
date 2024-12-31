@@ -21,8 +21,8 @@ export const setProfile = async (
   await mavenAgi.users.createOrUpdate({
     userId: { referenceId: user.id },
     data: {
-      name: { value: user.name, visibility: 'VISIBLE' },
-      identifiers: [{ value: user.email, type: 'EMAIL' }],
+      name: { value: user.name || '', visibility: 'VISIBLE' },
+      identifiers: [{ value: user.email || '', type: 'EMAIL' }],
     },
   });
 };
