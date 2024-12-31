@@ -109,7 +109,7 @@ export default {
         actionId: { referenceId: 'add-case' },
         name: 'Add Case',
         description: 'Add a new case to the list.',
-        userInteractionRequired: true,
+        userInteractionRequired: false,
         userFormParameters: [
           {
             id: 'name',
@@ -176,37 +176,41 @@ export default {
       case 'get-subscription':
         const [subscription, licenses] = await Promise.all([
           store().get(organizationId, agentId, SUBSCRIPTION_KEY),
-          store().get(organizationId, agentId, LICENSE_KEY),
+          store().getLicenses(organizationId, agentId),
         ]);
-        return JSON.stringify({ subscription, licenses });
+        return JSON.stringify({ subscription, ...licenses });
 
       case 'change-subscription': {
-        const tier = parameters.subscription_tier as string;
-        if (!['enterprise', 'professional', 'starter'].includes(tier)) {
-          return JSON.stringify({
-            success: false,
-            message: 'Invalid subscription tier. Use enterprise, professional, or starter.',
-          });
-        }
-        await store().set(organizationId, agentId, SUBSCRIPTION_KEY, { tier });
+        const result = await store().setSubscription(
+          organizationId,
+          agentId,
+          parameters.subscription_tier
+        );
+        const licenses = await store().getLicenses(organizationId, agentId);
         return JSON.stringify({
-          success: true,
-          message: `Subscription updated to ${tier}.`,
+          ...result,
+          ...licenses,
         });
       }
 
       case 'add-licenses': {
-        const licenses = await store().get(organizationId, agentId, LICENSE_KEY) || { user_licenses: 0 };
-        const newCount = licenses.user_licenses + Number(parameters.count);
-        await store().set(organizationId, agentId, LICENSE_KEY, { user_licenses: newCount });
-        return JSON.stringify({ user_licenses: newCount });
+        const licenses = await store().getLicenses(organizationId, agentId);
+        const result = await store().setLicenses(
+          organizationId,
+          agentId,
+          licenses.user_licenses + Number(parameters.count)
+        );
+        return JSON.stringify(result);
       }
 
       case 'remove-licenses': {
-        const licenses = await store().get(organizationId, agentId, LICENSE_KEY) || { user_licenses: 0 };
-        const newCount = Math.max(0, licenses.user_licenses - Number(parameters.count));
-        await store().set(organizationId, agentId, LICENSE_KEY, { user_licenses: newCount });
-        return JSON.stringify({ user_licenses: newCount });
+        const licenses = await store().getLicenses(organizationId, agentId);
+        const result = await store().setLicenses(
+          organizationId,
+          agentId,
+          Math.max(0, licenses.user_licenses - Number(parameters.count))
+        );
+        return JSON.stringify(result);
       }
 
       case 'get-cases':
@@ -230,6 +234,14 @@ export default {
       }
 
       case 'delete-case': {
+        const profile = await getProfile(organizationId, agentId, userId);
+        if (profile.userType !== 'Admin') {
+          return JSON.stringify({
+            success: false,
+            message: 'Permission denied: Only Admin users can delete cases.',
+          });
+        }
+
         const caseIndex = cases.findIndex((c) => c.number === parameters.number);
         if (caseIndex === -1) {
           return JSON.stringify({

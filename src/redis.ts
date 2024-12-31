@@ -1,5 +1,7 @@
 import { createClient } from 'redis';
 
+const PRICE_PER_USER_MONTH = 50.0;
+
 export async function getRedisClient() {
   const redisClient = createClient({
     url: process.env.REDIS_URL,
@@ -17,45 +19,103 @@ export async function getRedisClient() {
   return redisClient;
 }
 
-export const store = () => {
+const getPrice = (sub: string) => {
+  let price = PRICE_PER_USER_MONTH;
+  console.log('Calculating price for subscription tier:', sub);
+  if (sub === 'professional') {
+    price *= 1.5;
+  } else if (sub === 'enterprise') {
+    price *= 2;
+  }
+  console.log('Price per user:', price);
+  return price;
+};
+
+export const redisStore = () => {
   return {
-    async set(
-        organizationId: string,
-        agentId: string,
-        key: string,
-        data: any
+    async setLicenses(
+      organizationId: string,
+      agentId: string,
+      licenseCount: number
     ): Promise<any> {
       const redis = await getRedisClient();
-      console.log('redis.set', key, data);
+      if (typeof licenseCount !== 'number') {
+        licenseCount = Number(licenseCount);
+      }
+      const licenses = {
+        user_licenses: licenseCount,
+      };
+      console.log('Setting licenses:', licenses);
       await redis.json.set(
-          `${organizationId}:${agentId}:${key}`,
-          '$',
-          data
+        `${organizationId}:${agentId}:licenses`,
+        '$',
+        licenses
       );
-      return data;
-    },
-    async get(
-        organizationId: string,
-        agentId: string,
-        key: string,
-    ): Promise<any> {
-      const redis = await getRedisClient();
-      const value= await redis.json.get(
-          `${organizationId}:${agentId}:${key}`);
-      console.log('redis.get', key, value);
-      return value;
-    },
-    async delete(
-        organizationId: string,
-        agentId: string,
-        key: string,
-    ): Promise<any> {
-      const redis = await getRedisClient();
-      console.log('redis.delete', key);
-      return await redis.json.del(
-          `${organizationId}:${agentId}:${key}`
-      );
+      const subName = (await this.getSubscription(organizationId, agentId))
+        .tier;
+      return {
+        user_licenses: licenses.user_licenses,
+        subscription: subName,
+        monthly_price_per_user: getPrice(subName),
+        monthly_subscription_price_in_dollars: licenseCount * getPrice(subName),
+      };
     },
 
+    async getLicenses(organizationId: string, agentId: string): Promise<any> {
+      const redis = await getRedisClient();
+      const licenses = (await redis.json.get(
+        `${organizationId}:${agentId}:licenses`
+      )) as any;
+      console.log('Retrieved licenses:', licenses);
+      const subName = (await this.getSubscription(organizationId, agentId))
+        .tier;
+      const user_licenses = licenses?.user_licenses || 5;
+      return {
+        user_licenses,
+        subscription: subName,
+        monthly_price_per_user: getPrice(subName),
+        monthly_subscription_price_in_dollars:
+          user_licenses * getPrice(subName),
+      };
+    },
+
+    async setSubscription(
+      organizationId: string,
+      agentId: string,
+      tier: string
+    ): Promise<any> {
+      const redis = await getRedisClient();
+      console.log('Setting subscription tier:', tier);
+      tier = tier.toLowerCase();
+      if (tier !== 'starter' && tier !== 'professional' && tier !== 'enterprise') {
+        tier = 'enterprise';
+      }
+      const subscription = {
+        tier,
+      };
+      console.log('Subscription object:', subscription);
+      await redis.json.set(
+        `${organizationId}:${agentId}:subscription`,
+        '$',
+        subscription
+      );
+      return subscription;
+    },
+
+    async getSubscription(
+      organizationId: string,
+      agentId: string
+    ): Promise<any> {
+      const redis = await getRedisClient();
+      const subscription = await redis.json.get(
+        `${organizationId}:${agentId}:subscription`
+      );
+      console.log('Retrieved subscription:', subscription);
+      return (
+        subscription || {
+          tier: 'starter',
+        }
+      );
+    },
   };
 };
