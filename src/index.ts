@@ -35,8 +35,8 @@ export default {
     });
 
     // Initialize default values
-    await store().set(organizationId, agentId, LICENSE_KEY, { user_licenses: 5 });
-    await store().set(organizationId, agentId, SUBSCRIPTION_KEY, { tier: 'starter' });
+    await store.set(organizationId, agentId, LICENSE_KEY, { user_licenses: 5 });
+    await store.set(organizationId, agentId, SUBSCRIPTION_KEY, { tier: 'starter' });
 
     await resetProfiles(organizationId, agentId);
 
@@ -175,18 +175,18 @@ export default {
 
       case 'get-subscription':
         const [subscription, licenses] = await Promise.all([
-          store().get(organizationId, agentId, SUBSCRIPTION_KEY),
-          store().getLicenses(organizationId, agentId),
+          store.get(organizationId, agentId, SUBSCRIPTION_KEY),
+          store.getLicenses(organizationId, agentId),
         ]);
         return JSON.stringify({ subscription, ...licenses });
 
       case 'change-subscription': {
-        const result = await store().setSubscription(
+        const result = await store.setSubscription(
           organizationId,
           agentId,
           parameters.subscription_tier
         );
-        const licenses = await store().getLicenses(organizationId, agentId);
+        const licenses = await store.getLicenses(organizationId, agentId);
         return JSON.stringify({
           ...result,
           ...licenses,
@@ -194,8 +194,8 @@ export default {
       }
 
       case 'add-licenses': {
-        const licenses = await store().getLicenses(organizationId, agentId);
-        const result = await store().setLicenses(
+        const licenses = await store.getLicenses(organizationId, agentId);
+        const result = await store.setLicenses(
           organizationId,
           agentId,
           licenses.user_licenses + Number(parameters.count)
@@ -204,8 +204,8 @@ export default {
       }
 
       case 'remove-licenses': {
-        const licenses = await store().getLicenses(organizationId, agentId);
-        const result = await store().setLicenses(
+        const licenses = await store.getLicenses(organizationId, agentId);
+        const result = await store.setLicenses(
           organizationId,
           agentId,
           Math.max(0, licenses.user_licenses - Number(parameters.count))
