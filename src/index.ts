@@ -138,22 +138,34 @@ export default {
 
       case 'add-licenses': {
         const licenses = await redisStore().getLicenses(organizationId, agentId);
-        const result = await redisStore().setLicenses(
+
+        if (typeof licenses !== 'object' || licenses === null || !('user_licenses' in licenses)) {
+          throw new Error('Invalid licenses data retrieved from Redis.');
+        }
+
+        const updatedLicenses = await redisStore().setLicenses(
           organizationId,
           agentId,
-          licenses.user_licenses + Number(parameters.count)
+          (licenses.user_licenses as number) + Number(parameters.count)
         );
-        return JSON.stringify(result);
+
+        return JSON.stringify(updatedLicenses);
       }
 
       case 'remove-licenses': {
         const licenses = await redisStore().getLicenses(organizationId, agentId);
-        const result = await redisStore().setLicenses(
+
+        if (typeof licenses !== 'object' || licenses === null || !('user_licenses' in licenses)) {
+          throw new Error('Invalid licenses data retrieved from Redis.');
+        }
+
+        const updatedLicenses = await redisStore().setLicenses(
           organizationId,
           agentId,
-          Math.max(0, licenses.user_licenses - Number(parameters.count))
+          Math.max(0, (licenses.user_licenses as number) - Number(parameters.count))
         );
-        return JSON.stringify(result);
+
+        return JSON.stringify(updatedLicenses);
       }
 
       case 'get-cases':
