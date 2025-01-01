@@ -19,6 +19,10 @@ export default {
   }) {
     const mavenAgi = new MavenAGIClient({ organizationId, agentId });
 
+    // Setup actions, users, knowledge, etc
+
+    redisStore().setLicenses(organizationId, agentId, 10);
+
     await resetProfiles(organizationId, agentId);
 
     await mavenAgi.actions.createOrUpdate({
@@ -116,31 +120,6 @@ export default {
         },
       ],
     });
-
-    await mavenAgi.actions.createOrUpdate({
-      actionId: { referenceId: 'change-subscription' },
-      name: 'Change subscription',
-      description:
-        'Change subscription tier for account. Changes can also be upgrades and downgrades.',
-      userInteractionRequired: true,
-      userFormParameters: [
-        {
-          id: 'subscription_tier',
-          label: 'Subscription tier',
-          description:
-            'The level of the account. Values can be "enterprise", "professional", or "starter"',
-          required: true,
-        },
-      ],
-    });
-
-    await mavenAgi.actions.createOrUpdate({
-      actionId: { referenceId: 'get-subscription' },
-      name: 'Get subscription',
-      description: 'Get subscription tier',
-      userInteractionRequired: false,
-      userFormParameters: [],
-    });
   },
 
   async executeAction({ organizationId, agentId, actionId, parameters, user }: {
@@ -231,40 +210,6 @@ export default {
         return JSON.stringify({
           success: true,
           message: 'Case deleted successfully.',
-        });
-      }
-
-      case 'change-subscription': {
-        const subscriptionTier = parameters.subscription_tier?.toLowerCase();
-        if (!['enterprise', 'professional', 'starter'].includes(subscriptionTier)) {
-          return JSON.stringify({
-            success: false,
-            message: 'Invalid subscription tier provided.',
-          });
-        }
-
-        await redisStore().set(
-          organizationId,
-          agentId,
-          'subscription_tier',
-          subscriptionTier
-        );
-
-        return JSON.stringify({
-          success: true,
-          message: `Subscription tier changed to ${subscriptionTier}.`,
-        });
-      }
-
-      case 'get-subscription': {
-        const subscriptionTier = await redisStore().get(
-          organizationId,
-          agentId,
-          'subscription_tier'
-        );
-
-        return JSON.stringify({
-          subscriptionTier: subscriptionTier || 'No subscription tier set.',
         });
       }
 
