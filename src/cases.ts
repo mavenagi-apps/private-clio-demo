@@ -7,19 +7,19 @@ export interface Case {
 
 export const cases = [
   {
-    number: 123,
+    number: 1,
     name: 'Acme Corp',
     amount: '$1800',
     status: 'Progress',
   },
   {
-    number: 456,
+    number: 2,
     name: 'Tornado Pharma',
     amount: '$1500',
     status: 'Draft',
   },
   {
-    number: 789,
+    number: 3,
     name: 'MavenAGI',
     amount: '$2000',
     status: 'Complete'

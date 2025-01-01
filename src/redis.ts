@@ -5,6 +5,7 @@ const PRICE_PER_USER_MONTH = 50.0;
 export async function getRedisClient() {
   const redisClient = createClient({
     url: process.env.REDIS_URL,
+    password: process.env.REDIS_PASSWORD || undefined,
   });
 
   if (!redisClient.isOpen) {
@@ -55,7 +56,7 @@ export const redisStore = () => {
         `${organizationId}:${agentId}:licenses`
       )) as any;
 
-      const user_licenses = licenses?.user_licenses || 5; // Default to 5 licenses if none exist
+      const user_licenses = licenses?.user_licenses || 10; // Default to 10 licenses if none exist
 
       return {
         user_licenses,

@@ -1,7 +1,8 @@
-import { resetProfiles, setProfile, getProfile } from '@/data';
+import { resetProfiles, setProfile, getProfile } from './data';
 import { MavenAGIClient } from 'mavenagi';
 import { redisStore } from '@/redis';
 import { cases } from '@/cases';
+import {users} from "@/users";
 
 export default {
   async preInstall({ organizationId, agentId, settings }: {
@@ -17,18 +18,21 @@ export default {
     agentId: string;
     settings: AppSettings;
   }) {
-    const mavenAgi = new MavenAGIClient({ organizationId, agentId });
+    const mavenAgi = new MavenAGIClient({ 
+      organizationId: organizationId, 
+      agentId:agentId,
+     });
 
     // Setup actions, users, knowledge, etc
 
-    redisStore().setLicenses(organizationId, agentId, 10);
+    //redisStore().setLicenses(organizationId, agentId, 10);
 
     await resetProfiles(organizationId, agentId);
 
     await mavenAgi.actions.createOrUpdate({
       actionId: { referenceId: 'get-profile' },
-      name: "Get User's Profile",
-      description: "Retrieve the user's profile, including name, user type, and email.",
+      name: 'Get User\'s Profile',
+      description: 'Retrieve the user\'s profile, including name, user type, and email.',
       userInteractionRequired: false,
       userFormParameters: [],
     });
@@ -83,7 +87,7 @@ export default {
       actionId: { referenceId: 'add-case' },
       name: 'Add Case',
       description: 'Add a new case to the case list.',
-      userInteractionRequired: true,
+      userInteractionRequired: false,
       userFormParameters: [
         {
           id: 'name',
@@ -110,7 +114,7 @@ export default {
       actionId: { referenceId: 'delete-case' },
       name: 'Delete Case (Admin Only)',
       description: 'Delete a case. Admin users only.',
-      userInteractionRequired: true,
+      userInteractionRequired: false,
       userFormParameters: [
         {
           id: 'number',
@@ -122,14 +126,22 @@ export default {
     });
   },
 
-  async executeAction({ organizationId, agentId, actionId, parameters, user }: {
+  async executeAction({
+    organizationId,
+    agentId,
+    actionId,
+    parameters,
+    user,
+  }: {
     organizationId: string;
     agentId: string;
     actionId: string;
     parameters: Record<string, any>;
-    user: { defaultUserData: { userId: string } };
+    user: any;
   }) {
-    const userId = user?.defaultUserData?.userId;
+    console.log('user', user);
+    console.log('parameters', parameters);
+    const userId = user.defaultUserData.userId ?? users[0].id;
 
     switch (actionId) {
       case 'get-profile':

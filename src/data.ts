@@ -15,7 +15,7 @@ export const setProfile = async (
   });
 
   // Set initial profile data in Redis using setLicenses for user count simulation
-  const licenses = await redisStore().setLicenses(organizationId, agentId, 1); // Set a single license for demo purposes
+  const licenses = await redisStore().setLicenses(organizationId, agentId, 10); // Set 10 licenses for demo purposes
 
   await mavenAgi.users.createOrUpdate({
     userId: { referenceId: user.id },
@@ -33,12 +33,20 @@ export const setProfile = async (
   });
 };
 
-export const resetProfiles = async (organizationId: string, agentId: string) => {
-  users.map(async (user) => {
-    await setProfile(organizationId, agentId, user);
-  });
-  return { success: true };
-};
+export const resetProfiles = async (
+  organizationId: string,
+  agentId: string,
+) => {
+const mavenAgi = new MavenAGIClient({
+  organizationId: organizationId,
+  agentId: agentId,
+});
+
+users.map(async (user) => {
+  await setProfile(organizationId, agentId, user);
+});
+return {success: true};
+}
 
 export const getProfile = async (
   organizationId: string,
