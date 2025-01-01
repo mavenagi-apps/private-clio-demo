@@ -2,7 +2,6 @@ import { resetProfiles, setProfile, getProfile } from '@/data';
 import { MavenAGIClient } from 'mavenagi';
 import { redisStore } from '@/redis';
 import { cases } from '@/cases';
-import { AppSettings } from '@/types';
 
 export default {
   async preInstall({ organizationId, agentId, settings }: {
