@@ -30,7 +30,7 @@ export const setProfile = async (
       memberSince: { value: user.memberSince, visibility: 'VISIBLE' },
       lastNPS: { value: user.lastNPS, visibility: 'VISIBLE' },
       status: { value: user.status, visibility: 'VISIBLE' },
-      opportunity: { value: user.ProServe, visibility: 'VISIBLE' },
+      opportunity: { value: user.opportunity, visibility: 'VISIBLE' },
       userId: { value: user.id, visibility: 'VISIBLE' },
     },
   });
