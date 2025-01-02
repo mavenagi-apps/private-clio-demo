@@ -7,8 +7,9 @@ export default async function Page({
   searchParams?: { [key: string]: string | string[] | undefined },
 }) {
   const userId = searchParams?.userId as string || users[0].id;
+  console.log('userId', userId);
   const user = users.find(u => u.id === userId)!;
-  
+  console.log('user', user);
   const userData = await secureUserData({
     id: user.id,
     name: user.firstName + ' ' + user.lastName,
