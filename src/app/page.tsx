@@ -45,8 +45,8 @@ export default async function Page({
             __html: `
               addEventListener("load", function () {
                 Maven.ChatWidget.load({
-                  organizationId: "clio",
-                  agentId: "support",
+                  orgFriendlyId: "clio",
+                  agentFriendlyId: "support",
                   bgColor: "#3464DC",
                   signedUserData: "${userData}"
                 })
