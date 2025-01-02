@@ -50,6 +50,12 @@ export default {
       userInteractionRequired: false,
       userFormParameters: [
         {
+          id: 'number',
+          label: 'Case Number',
+          description: 'Number of the case.',
+          required: true,
+        },
+        {
           id: 'name',
           label: 'Case Name',
           description: 'Name of the case.',
@@ -114,7 +120,7 @@ export default {
 
       case 'add-case': {
         const newCase = {
-          number: cases.length + 1,
+          number: parameters.number,
           name: parameters.name,
           amount: parameters.amount,
           status: parameters.status,
