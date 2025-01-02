@@ -10,9 +10,9 @@ export interface User {
   companyName: string;
   products: string;
   memberSince: string;
-  lastNPS: number;
+  lastNPS: string;
   status: string;
-  ProServe: boolean;
+  opportunity: string;
 }
 
 
@@ -26,9 +26,9 @@ export const users = [
     companyName: "Big Law Firm",
     products: "Clio Manage",
     memberSince: '2021-01-31',
-    lastNPS: 83,
+    lastNPS: "83",
     status: "Paid",
-    ProServe: true,
+    opportunity: "ProServe",
   },
   {
     id: '52',
@@ -39,8 +39,8 @@ export const users = [
     companyName: "Big Law Firm",
     products: "Clio Grow",
     memberSince: '2022-07-15',
-    lastNPS: 68,
+    lastNPS: "68",
     status: "Past Due",
-    ProServe: false,
+    opportunity: "None",
   },
 ] as User[];
