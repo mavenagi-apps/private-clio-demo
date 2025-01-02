@@ -39,7 +39,7 @@ export default async function Page({
           height: '100vh'
         }}
       >
-        <script src="https://chat.onmaven.app/widget.js" defer></script>
+        <script src="https://chat.onmaven.app/js/widget.js" defer></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
