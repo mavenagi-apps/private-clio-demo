@@ -1,9 +1,9 @@
 declare namespace NodeJS {
-  export interface ProcessEnv {
-    DEMO_SIGNING_PRIVATE_KEY: string;
-    DEMO_ENCRYPTION_SECRET: string;
-    REDIS_URL: string;
+  interface ProcessEnv {
     MAVENAGI_APP_ID: string;
     MAVENAGI_APP_SECRET: string;
+    DEMO_ENCRYPTION_SECRET: string;
+    DEMO_SIGNING_PRIVATE_KEY: string;
+    REDIS_URL: string;
   }
 }
