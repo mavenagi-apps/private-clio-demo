@@ -1,5 +1,5 @@
 export interface Case {
-  number: number;
+  number: string;
   name: string;
   amount: string;
   status: string;
@@ -7,19 +7,19 @@ export interface Case {
 
 export const cases = [
   {
-    number: 1,
+    number: "1",
     name: 'Acme Corp',
     amount: '$1800',
     status: 'Progress',
   },
   {
-    number: 2,
+    number: "2",
     name: 'Tornado Pharma',
     amount: '$1500',
     status: 'Draft',
   },
   {
-    number: 3,
+    number: "3",
     name: 'MavenAGI',
     amount: '$2000',
     status: 'Complete'
