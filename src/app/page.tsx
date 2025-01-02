@@ -6,7 +6,7 @@ export default async function Page({
 }: {
   searchParams?: { [key: string]: string | string[] | undefined },
 }) {
-  const userId = searchParams?.userId as string || users[0].id;
+  const userId = searchParams?.userId as string || "112";
   console.log('userId', userId);
   const user = users.find(u => u.id === userId)!;
   console.log('user', user);
