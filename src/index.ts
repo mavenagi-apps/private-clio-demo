@@ -25,8 +25,6 @@ export default {
 
     // Setup actions, users, knowledge, etc
 
-    //redisStore().setLicenses(organizationId, agentId, 10);
-
     await resetProfiles(organizationId, agentId);
 
     await mavenAgi.actions.createOrUpdate({
@@ -35,44 +33,6 @@ export default {
       description: 'Retrieve the user\'s profile, including name, user type, and email.',
       userInteractionRequired: false,
       userFormParameters: [],
-    });
-
-    await mavenAgi.actions.createOrUpdate({
-      actionId: { referenceId: 'get-licenses' },
-      name: 'Get Licenses',
-      description: 'Retrieve the current number of user licenses.',
-      userInteractionRequired: false,
-      userFormParameters: [],
-    });
-
-    await mavenAgi.actions.createOrUpdate({
-      actionId: { referenceId: 'add-licenses' },
-      name: 'Add Licenses',
-      description: 'Add user licenses to the current account.',
-      userInteractionRequired: true,
-      userFormParameters: [
-        {
-          id: 'count',
-          label: 'License Count',
-          description: 'Number of licenses to add.',
-          required: true,
-        },
-      ],
-    });
-
-    await mavenAgi.actions.createOrUpdate({
-      actionId: { referenceId: 'remove-licenses' },
-      name: 'Remove Licenses',
-      description: 'Remove user licenses from the account.',
-      userInteractionRequired: true,
-      userFormParameters: [
-        {
-          id: 'count',
-          label: 'License Count',
-          description: 'Number of licenses to remove.',
-          required: true,
-        },
-      ],
     });
 
     await mavenAgi.actions.createOrUpdate({
@@ -148,41 +108,6 @@ export default {
         return JSON.stringify({
           profile: await getProfile(organizationId, agentId, userId),
         });
-
-      case 'get-licenses':
-        return JSON.stringify(await redisStore().getLicenses(organizationId, agentId));
-
-      case 'add-licenses': {
-        const licenses = await redisStore().getLicenses(organizationId, agentId);
-
-        if (typeof licenses !== 'object' || licenses === null || !('user_licenses' in licenses)) {
-          throw new Error('Invalid licenses data retrieved from Redis.');
-        }
-
-        const updatedLicenses = await redisStore().setLicenses(
-          organizationId,
-          agentId,
-          (licenses.user_licenses as number) + Number(parameters.count)
-        );
-
-        return JSON.stringify(updatedLicenses);
-      }
-
-      case 'remove-licenses': {
-        const licenses = await redisStore().getLicenses(organizationId, agentId);
-
-        if (typeof licenses !== 'object' || licenses === null || !('user_licenses' in licenses)) {
-          throw new Error('Invalid licenses data retrieved from Redis.');
-        }
-
-        const updatedLicenses = await redisStore().setLicenses(
-          organizationId,
-          agentId,
-          Math.max(0, (licenses.user_licenses as number) - Number(parameters.count))
-        );
-
-        return JSON.stringify(updatedLicenses);
-      }
 
       case 'get-cases':
         return JSON.stringify({ cases });

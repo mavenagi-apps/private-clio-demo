@@ -1,7 +1,5 @@
 import { createClient } from 'redis';
 
-const PRICE_PER_USER_MONTH = 50.0;
-
 export async function getRedisClient() {
   const redisClient = createClient({
     url: process.env.REDIS_URL,
@@ -21,49 +19,43 @@ export async function getRedisClient() {
 
 export const redisStore = () => {
   return {
-    async setLicenses(
-      organizationId: string,
-      agentId: string,
-      licenseCount: number
+    async set(
+        organizationId: string,
+        agentId: string,
+        key: string,
+        data: any
     ): Promise<any> {
       const redis = await getRedisClient();
-
-      if (typeof licenseCount !== 'number') {
-        licenseCount = Number(licenseCount);
-      }
-
-      const licenses = {
-        user_licenses: licenseCount,
-      };
-
+      console.log('redis.set', key, data);
       await redis.json.set(
-        `${organizationId}:${agentId}:licenses`,
-        '$',
-        licenses
+          `${organizationId}:${agentId}:${key}`,
+          '$',
+          data
       );
-
-      return {
-        user_licenses: licenses.user_licenses,
-        monthly_price_per_user: PRICE_PER_USER_MONTH,
-        monthly_subscription_price_in_dollars:
-          licenseCount * PRICE_PER_USER_MONTH,
-      };
+      return data;
     },
-
-    async getLicenses(organizationId: string, agentId: string): Promise<any> {
+    async get(
+        organizationId: string,
+        agentId: string,
+        key: string,
+    ): Promise<any> {
       const redis = await getRedisClient();
-      const licenses = (await redis.json.get(
-        `${organizationId}:${agentId}:licenses`
-      )) as any;
-
-      const user_licenses = licenses?.user_licenses || 10; // Default to 10 licenses if none exist
-
-      return {
-        user_licenses,
-        monthly_price_per_user: PRICE_PER_USER_MONTH,
-        monthly_subscription_price_in_dollars:
-          user_licenses * PRICE_PER_USER_MONTH,
-      };
+      const value= await redis.json.get(
+          `${organizationId}:${agentId}:${key}`);
+      console.log('redis.get', key, value);
+      return value;
     },
+    async delete(
+        organizationId: string,
+        agentId: string,
+        key: string,
+    ): Promise<any> {
+      const redis = await getRedisClient();
+      console.log('redis.delete', key);
+      return await redis.json.del(
+          `${organizationId}:${agentId}:${key}`
+      );
+    },
+
   };
 };

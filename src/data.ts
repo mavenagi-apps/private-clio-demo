@@ -14,8 +14,8 @@ export const setProfile = async (
     agentId: agentId,
   });
 
-  // Set initial profile data in Redis using setLicenses for user count simulation
-  const licenses = await redisStore().setLicenses(organizationId, agentId, 10); // Set 10 licenses for demo purposes
+ // Set initial profile data on install
+  await redisStore().set(organizationId, agentId, `${user.id}:${PROFILE}`, user);
 
   await mavenAgi.users.createOrUpdate({
     userId: { referenceId: user.id },
@@ -28,6 +28,9 @@ export const setProfile = async (
       companyName: { value: user.companyName, visibility: 'VISIBLE' },
       products: { value: user.products, visibility: 'VISIBLE' },
       memberSince: { value: user.memberSince, visibility: 'VISIBLE' },
+      lastNPS: { value: user.lastNPS, visibility: 'VISIBLE' },
+      status: { value: user.status, visibility: 'VISIBLE' },
+      opportunity: { value: user.ProServe, visibility: 'VISIBLE' },
       userId: { value: user.id, visibility: 'VISIBLE' },
     },
   });
@@ -52,16 +55,17 @@ export const getProfile = async (
   organizationId: string,
   agentId: string,
   userId: string
-): Promise<User & { ageInDays: number }> => {
-  const profile = await redisStore().getLicenses(organizationId, agentId); // Retrieve licenses data instead
-  console.log('profile', profile);
-
-  const memberSince = new Date(profile?.memberSince || new Date());
-  const currentDate = new Date();
-  const ageInDays = (currentDate.getTime() - memberSince.getTime()) / (1000 * 60 * 60 * 24);
-
-  return {
-    ...profile,
-    ageInDays: Math.floor(ageInDays),
-  };
+): Promise<User & {
+ageInDays: number;
+}> => {
+const profile = await redisStore().get(organizationId, agentId, `${userId}:${PROFILE}`);
+console.log('profile', profile)
+const memberSince = new Date(profile.memberSince);
+const currentDate = new Date();
+const ageInDays = (currentDate.getTime() - memberSince.getTime()) / (1000 * 60 * 60 * 24);
+console.log('ageInDays', ageInDays);
+return {
+  ...profile,
+  ageInDays: Math.floor(ageInDays),
+};
 };
